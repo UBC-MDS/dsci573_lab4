@@ -3,7 +3,7 @@
 
 
 **Contributors**
-- Crystal 
+- Crystal Geng
 - Eyre Hong 
 - Kelly Wu
 - Shirley Zhang
