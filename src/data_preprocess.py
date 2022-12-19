@@ -10,7 +10,7 @@ Options:
 --output_path=<output_path>         Path of the output directory for the processed data 
 
 Command to run the script:
-python src/data_preprocess.py --input_path="data/raw/UCI_Credit_Card.csv" --output_path="data/processed/"
+python src/data_preprocess.py --input_path='data/raw/UCI_Credit_Card.csv' --output_path='data/processed/'
 """
 
 from docopt import docopt
@@ -19,29 +19,6 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 opt = docopt(__doc__)
-
-def main(input_path, output_path):
-    
-    # Read raw data from input path as a pandas dataframe
-    cc_df = pd.read_csv(input_path)
-    
-    # Rename 'default.payment.next.month' and 'PAY_0' columns 
-    cc_df = cc_df.rename(columns={'default.payment.next.month': 'target', 'PAY_0':'PAY_1'})
-    
-    # Split data into training and test set (20% test) 
-    train_df, test_df = train_test_split(cc_df, test_size=0.2, random_state=123)
-    
-    # Feature engineering 1: create "BP_R*" columns (ratio of payment amount to billed amount per month)
-    train_df, test_df = create_BP_R(train_df, test_df)
-    
-    # Feature engineering 2: create "CB_*" columns (ratio of billed amount to amount of given credit per month)
-    train_df, test_df = create_CB(train_df, test_df)
-    
-    # Replace any infs and NaNs with 1 
-    train_df, test_df = replace_inf_nans(train_df, test_df)
-    
-    # Save processed data as .csv files 
-    save_to_csv(train_df, test_df, output_path)
 
 def create_BP_R(train_df, test_df):
     
@@ -94,12 +71,38 @@ def replace_inf_nans(train_df, test_df):
 def save_to_csv(train_df, test_df, output_path):
     
     # Create output file names
-    train_output_file = output_path + "cc_train_df.csv"
-    test_output_file = output_path + "cc_test_df.csv"
+    train_output_file = output_path + 'cc_train_df.csv'
+    test_output_file = output_path + 'cc_test_df.csv'
     
     # Save to .csv 
     train_df.to_csv(train_output_file)
     test_df.to_csv(test_output_file)
+    
+def main(input_path, output_path):
+    
+    # Read raw data from input path as a pandas dataframe
+    cc_df = pd.read_csv(input_path)
+    
+    # Rename 'default.payment.next.month' and 'PAY_0' columns 
+    cc_df = cc_df.rename(columns={'default.payment.next.month': 'target', 'PAY_0':'PAY_1'})
+    
+    # Change levels in 'EDUCATION' column 
+    cc_df['EDUCATION'].replace({0: 4, 5: 4, 6: 4}, inplace=True)
+    
+    # Split data into training and test set (20% test) 
+    train_df, test_df = train_test_split(cc_df, test_size=0.2, random_state=123)
+    
+    # Feature engineering 1: create 'BP_R*' columns (ratio of payment amount to billed amount per month)
+    train_df, test_df = create_BP_R(train_df, test_df)
+    
+    # Feature engineering 2: create 'CB_*' columns (ratio of billed amount to amount of given credit per month)
+    train_df, test_df = create_CB(train_df, test_df)
+    
+    # Replace any infs and NaNs with 1 
+    train_df, test_df = replace_inf_nans(train_df, test_df)
+    
+    # Save processed data as .csv files 
+    save_to_csv(train_df, test_df, output_path)
 
-if __name__ == "__main__":
-    main(opt["--input_path"], opt["--output_path"])
+if __name__ == '__main__':
+    main(opt['--input_path'], opt['--output_path'])
