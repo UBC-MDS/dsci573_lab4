@@ -72,15 +72,18 @@ def save_chart(chart, filename, scale_factor=1):
         The factor to scale the image resolution by.
         E.g. A value of `2` means two times the default resolution.
     '''
-    if filename.split('.')[-1] == 'svg':
-        with open(filename, "w") as f:
-            f.write(vlc.vegalite_to_svg(chart.to_dict()))
-    elif filename.split('.')[-1] == 'png':
-        with open(filename, "wb") as f:
-            f.write(vlc.vegalite_to_png(chart.to_dict(), scale=scale_factor))
-    else:
-        raise ValueError("Only svg and png formats are supported") 
-    
+    with alt.data_transformers.enable(
+        "default"
+    ) and alt.data_transformers.disable_max_rows():
+        if filename.split(".")[-1] == "svg":
+            with open(filename, "w") as f:
+                f.write(vlc.vegalite_to_svg(chart.to_dict()))
+        elif filename.split(".")[-1] == "png":
+            with open(filename, "wb") as f:
+                f.write(vlc.vegalite_to_png(chart.to_dict(), scale=scale_factor))
+        else:
+            raise ValueError("Only svg and png formats are supported")
+
 def main(train_df_path, test_df_path, output_path):
     
     # Read processed training and test data from input path as pandas dataframes
@@ -97,21 +100,21 @@ def main(train_df_path, test_df_path, output_path):
     
     # Create a histogram of distributions of all columns/features
     chart_title = 'Histogram of Distribution of Values for Each Feature'
-    repeated_histogram = column_dis_histogram(train_df, chart_title)
+    repeated_histogram1 = column_dis_histogram(train_df, chart_title)
     
     # Save histogram as .png 
-    #filename = output_path + 'feature_dis_histogram.png'
-    #save_chart(repeated_histogram, filename, scale_factor=1)
+    filename = output_path + 'feature_dis_histogram.png'
+    save_chart(repeated_histogram1, filename, scale_factor=1)
     
     ##### test save .png 
-    test = alt.Chart(train_df[['ID', 'target']], width=200, height=100).mark_bar().encode(
-        x=alt.X('ID', bin=alt.Bin(maxbins=70)),
-        y='count()',
-        color='target'
-    )
-    filename = output_path + 'test.png'
-    test
-    #save_chart(test, filename, scale_factor=1)
+    # test = alt.Chart(train_df[['ID', 'target']], width=200, height=100).mark_bar().encode(
+    #     x=alt.X('ID', bin=alt.Bin(maxbins=70)),
+    #     y='count()',
+    #     color='target'
+    # )
+    # filename = output_path + 'test.png'
+    # test
+    # save_chart(test, filename, scale_factor=1)
     
 
 if __name__ == '__main__':
